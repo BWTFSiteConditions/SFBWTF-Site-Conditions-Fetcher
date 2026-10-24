@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BWTF Field Conditions</title>
+  <meta name="description" content="Weather and ocean values for the Surfrider SF Blue Water Task Force Water Sampling Data Sheet, fetched live from public sources.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <p class="kicker">Surfrider SF · Blue Water Task Force</p>
+    <h1>Field Conditions</h1>
+    <p class="lede">Pick your site and when you sampled. Copy each value onto the Water Sampling Data Sheet.</p>
+  </header>
+
+  <main>
+    <form id="form" class="panel" autocomplete="off">
+      <fieldset>
+        <legend>Sites</legend>
+        <div id="sites" class="groups"></div>
+      </fieldset>
+
+      <fieldset class="when">
+        <legend>Sampled at <span class="tz">(San Francisco time)</span></legend>
+        <div class="when-row">
+          <label>Date <input type="date" id="date" required></label>
+          <label>Time <input type="time" id="time" required></label>
+          <button type="button" id="now" class="ghost">Now</button>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="go">Get conditions</button>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </form>
+
+    <div id="results"></div>
+  </main>
+
+  <footer class="foot">
+    <p>Nothing is stored here. Every value is fetched live from public sources:
+      <a href="https://open-meteo.com/">Open-Meteo</a> (weather and marine models),
+      <a href="https://tidesandcurrents.noaa.gov/stationhome.html?id=9414290">NOAA CO-OPS</a> (Fort Point station, tide predictions), and the
+      <a href="https://www.ndbc.noaa.gov/station_page.php?station=46237">SF Bar buoy 46237</a> via
+      <a href="https://cdip.ucsd.edu/m/products/?stn=142p1">CDIP</a> and <a href="https://erddap.sensors.ioos.us/erddap/tabledap/edu_ucsd_cdip_142.html">IOOS</a>.
+      Distances are from the site to the station or model grid point.</p>
+    <p>Site coordinates are the ones registered in the Surfrider BWTF database. For a forecast view, see
+      <a href="https://www.willyweather.com/ca/san-francisco-county/ocean-beach.html">WillyWeather</a>; its “now” readings come from SFO and Oakland airports.</p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

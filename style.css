@@ -1,0 +1,75 @@
+/* BWTF Lab Wall look: Roboto, Bebas Neue numerals, blue on white, hairlines, no shadows. */
+:root {
+  --blue: #368add;
+  --blue-light: #95cdeb;
+  --blue-wash: #eef6fc;
+  --ink: #1d2a36;
+  --muted: #5f6b76;
+  --line: #b4b2a9;
+  --warn: #9a5b00;
+  --warn-wash: #fff6e5;
+  --bg: #ffffff;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.45 Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+a { color: var(--blue); }
+.top, main, .foot { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+
+.top { padding-top: 20px; padding-bottom: 12px; border-bottom: 3px solid var(--blue); }
+.kicker { margin: 0; font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); }
+h1 { margin: 2px 0 4px; font: 400 44px/1 "Bebas Neue", Roboto, sans-serif; letter-spacing: .02em; }
+.lede { margin: 0; color: var(--muted); font-size: 15px; }
+
+.panel { margin: 16px 0; }
+fieldset { border: 0; margin: 0 0 14px; padding: 0; min-width: 0; }
+legend { padding: 0; margin-bottom: 8px; font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+.tz { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); }
+
+.groups { display: grid; gap: 8px; }
+.group { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px 10px; }
+.group-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.group-name { font: 400 20px/1 "Bebas Neue", Roboto, sans-serif; letter-spacing: .04em; color: var(--blue); }
+.group-all { font-size: 13px; padding: 4px 8px; }
+.site { display: flex; align-items: center; gap: 10px; padding: 8px 4px; min-height: 44px; cursor: pointer; border-top: 1px solid #e6e5e0; }
+.site:first-of-type { border-top: 0; }
+.site input { width: 22px; height: 22px; accent-color: var(--blue); margin: 0; }
+
+.when-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.when-row label { display: flex; flex-direction: column; font-size: 13px; color: var(--muted); flex: 1 1 130px; }
+input[type=date], input[type=time] {
+  font: inherit; color: var(--ink); background: #fff;
+  border: 1px solid var(--line); border-radius: 6px; padding: 10px; min-height: 44px; margin-top: 4px; width: 100%;
+}
+button { font: inherit; cursor: pointer; border-radius: 6px; }
+.ghost { background: #fff; color: var(--blue); border: 1px solid var(--blue); padding: 10px 16px; min-height: 44px; }
+.go {
+  width: 100%; min-height: 50px; border: 0; background: var(--blue); color: #fff;
+  font: 400 24px/1 "Bebas Neue", Roboto, sans-serif; letter-spacing: .06em;
+}
+.go:disabled { background: var(--blue-light); }
+.status { min-height: 1.4em; margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+.status.err { color: #b3261e; }
+
+.site-card { border: 1px solid var(--line); border-radius: 6px; margin: 0 0 18px; overflow: hidden; }
+.site-card h2 { margin: 0; padding: 10px 12px; background: var(--blue-wash); border-bottom: 1px solid var(--line); font-size: 18px; }
+.site-card h2 small { display: block; font-weight: 400; font-size: 13px; color: var(--muted); }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 12px; border-top: 1px solid #e6e5e0; }
+.row:first-of-type { border-top: 0; }
+.label { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; align-self: center; }
+.value { font: 400 34px/1 "Bebas Neue", Roboto, sans-serif; letter-spacing: .02em; color: var(--blue); text-align: right; white-space: nowrap; }
+.value .unit { font-size: 20px; margin-left: 2px; color: var(--ink); }
+.value.word { font-family: Roboto, sans-serif; font-size: 20px; font-weight: 700; line-height: 1.2; white-space: normal; }
+.value.missing { color: var(--muted); font-size: 18px; font-family: Roboto, sans-serif; }
+.meta { grid-column: 1 / -1; font-size: 13px; color: var(--muted); }
+.meta .detail { color: var(--ink); }
+.meta .alt { display: block; }
+.note { grid-column: 1 / -1; font-size: 13px; color: var(--warn); background: var(--warn-wash); padding: 4px 8px; border-radius: 4px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; margin-right: 4px; color: var(--muted); }
+
+.foot { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 12px; padding-bottom: 32px; font-size: 13px; color: var(--muted); }
