@@ -97,8 +97,7 @@ function renderSite(site, c, t, first) {
       <h2>${esc(site.name)}</h2>
       <span class="when">Group ${site.group} · ${when}</span>
     </header>
-    <div class="accent"></div>
-    ${first ? `<div class="change-bar"><button type="button" class="ghost change" data-focus="sites">Change site</button><button type="button" class="ghost change" data-focus="time">Change time</button></div>` : ''}
+    ${first ? `<div class="change-bar"><button type="button" class="ghost back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to site and time</button></div>` : ''}
     ${FIELDS.map(([k, label]) => row(k, label, c[k])).join('')}
   </section>`;
 }
@@ -144,11 +143,17 @@ renderPicker(fromUrl.length ? fromUrl : state.sites || []);
 if (state.date && state.time) { $('date').value = state.date; $('time').value = state.time; } else setNow();
 $('now').addEventListener('click', setNow);
 $('form').addEventListener('submit', run);
+// Back returns to the picker with every choice cleared: no sites ticked, date and time empty,
+// nothing remembered, and no ?site= preselect left in the address.
 $('results').addEventListener('click', (e) => {
-  const btn = e.target.closest('.change');
-  if (!btn) return;
+  if (!e.target.closest('.back')) return;
+  document.querySelectorAll('input[name=site]').forEach((i) => { i.checked = false; });
+  $('date').value = '';
+  $('time').value = '';
+  save({});
+  if (location.search) history.replaceState(null, '', location.pathname);
   document.body.classList.remove('has-results');
   $('results').innerHTML = '';
-  if (btn.dataset.focus === 'time') $('time').focus();
-  else window.scrollTo(0, 0);
+  $('status').textContent = '';
+  window.scrollTo(0, 0);
 });

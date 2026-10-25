@@ -7,6 +7,7 @@
   --blue: #368add;   /* phase1-accent: the accent bar and large marks only (3.6:1) */
   --tint: #e6f1fb;   /* phase1-tint */
   --rule: #b4b2a9;
+  --brand: #0072bc;  /* Surfrider blue, behind the logos */
   --bg: #ffffff;
 }
 * { box-sizing: border-box; }
@@ -21,18 +22,23 @@ a { color: var(--navy); }
 a:hover { color: var(--blue); }
 main, .foot { max-width: 720px; margin: 0 auto; padding: 0 16px; }
 
-/* dark header: the page's before results, each site's after */
-.top, .card-head {
-  background: var(--ink-strong); color: #fff;
-  padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 6px;
+/* logo bar on every screen; the text sits in a banner below it (the page's before results, each site's after) */
+.logo-bar {
+  background: var(--brand); height: 76px; padding: 10px 12px 10px 4px;
+  display: flex; align-items: center; justify-content: space-between;
 }
-.org { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
-.top h1, .card-head h2 {
-  margin: 0; font: 400 44px/.9 "Bebas Neue", Impact, sans-serif; letter-spacing: .02em;
-}
-.card-head .when { font-size: 15px; }
+.logo-bwtf { height: 60px; width: auto; display: block; }
+.logo-sf { height: 42px; width: auto; display: block; }
 .accent { height: 8px; background: var(--blue); }
-body.has-results .top, body.has-results .top-accent, body.has-results .panel { display: none; }
+.banner, .card-head {
+  background: var(--tint); color: var(--navy); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 4px; font-weight: 600;
+  border-bottom: 2px solid var(--ink-strong);
+}
+.org { font-size: 13px; line-height: 1.35; }
+.banner h1, .card-head h2 { margin: 0; font-size: 30px; font-weight: 600; line-height: 1.15; }
+.card-head .when { font-size: 15px; line-height: 1.35; }
+body.has-results .top-banner, body.has-results .panel { display: none; }
 
 /* picker */
 .panel { margin: 16px 0 0; }
@@ -73,20 +79,21 @@ button { font: inherit; cursor: pointer; border-radius: 6px; }
 /* results: one block per site */
 .site-card { margin: 0 -16px 24px; }
 .change-bar { display: flex; gap: 8px; padding: 12px 16px; border-bottom: 2px solid var(--ink-strong); }
-.change-bar .ghost { flex: 1 1 0; }
+.change-bar .ghost { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.change-bar .ghost svg { width: 18px; height: 18px; }
 .row { padding: 14px 16px; border-bottom: 2px solid var(--ink-strong); display: flex; flex-direction: column; gap: 6px; }
 .row-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.row .label { font-size: 15px; font-weight: 600; line-height: 1.35; }
+.row .label { font-size: 24px; font-weight: 600; line-height: 1.2; }
 .row .value {
   display: flex; align-items: center; justify-content: flex-end; text-align: right;
-  font-size: 48px; font-weight: 700; line-height: 1; white-space: nowrap;
+  font-size: 44px; font-weight: 700; line-height: 1; white-space: nowrap;
 }
 .row a.value {
   color: inherit; text-decoration: underline; text-decoration-color: #95cdeb;
   text-decoration-thickness: 3px; text-underline-offset: 6px;
 }
 .row a.value:hover { text-decoration-color: var(--blue); }
-.row .value.word { font-size: 32px; white-space: normal; }
+.row .value.word { font-size: 30px; white-space: normal; }
 .row .value.missing { font-size: 32px; color: var(--body); }
 .row .value .unit { font-size: .55em; margin-left: .18em; align-self: flex-end; padding-bottom: .1em; }
 .row .value .arrow { width: .7em; height: .7em; margin-left: .12em; color: var(--blue); flex-shrink: 0; }
