@@ -27,8 +27,7 @@ main, .foot { max-width: 720px; margin: 0 auto; padding: 0 16px; }
   background: var(--brand); height: 76px; padding: 10px 12px 10px 4px;
   display: flex; align-items: center; justify-content: space-between;
 }
-.logo-bwtf { height: 60px; width: auto; display: block; }
-.logo-sf { height: 42px; width: auto; display: block; }
+.logo-bwtf { height: 67px; width: auto; display: block; }
 .accent { height: 8px; background: var(--blue); }
 .banner, .card-head {
   background: var(--tint); color: var(--navy); padding: 14px 16px;
