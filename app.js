@@ -83,7 +83,7 @@ function row(k, label, f) {
   const val = numeric ? `${f.value}${unit}` : esc(cap(String(f.value)));
   const word = !numeric && String(f.value).length > 8;
   return `<div class="row">
-    <div class="row-top"><span class="label">${label}</span><span class="value-col"><span class="value${word ? ' word' : ''}">${val}${k === 'tide' ? arrow(f.rising) : ''}</span>${f.sub ? `<span class="sub">${esc(f.sub)}</span>` : ''}</span></div>
+    <div class="row-top"><span class="label">${label}</span><span class="value-col"><a class="value${word ? ' word' : ''}" href="${esc(f.src.url)}" target="_blank" rel="noopener" title="Open the source of this value">${val}${k === 'tide' ? arrow(f.rising) : ''}</a>${f.sub ? `<span class="sub">${esc(f.sub)}</span>` : ''}</span></div>
     <p class="src">${srcLine(k, f)}</p>
     ${f.note ? `<p class="note">${esc(f.note)}</p>` : ''}
   </div>`;

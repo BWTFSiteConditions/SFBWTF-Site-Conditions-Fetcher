@@ -273,18 +273,27 @@ export async function getConditions(site, t, { get = createFetcher(), now = new 
     settle(openMeteo(get, site, t, now)), settle(fortPoint(get, t)), settle(tides(get, site, t)),
     settle(buoy(get, t, now)), settle(marine(get, site, t)),
   ]);
+  // Each value links to a page people can read for this site and date, not the raw API response.
+  const day = fmtLaDate(t), ymd = day.replace(/-/g, '');
   const fpDist = distanceMi(site.lat, site.lon, FORT_POINT.lat, FORT_POINT.lon);
-  const fpSrc = (at, api) => ({ name: FORT_POINT.name, url: `https://tidesandcurrents.noaa.gov/stationhome.html?id=${FORT_POINT.id}`, api, distMi: fpDist, at, measured: true });
-  const omSrc = om.v && { ...om.v.src, at: om.v.at?.at };
+  const fpPage = `https://tidesandcurrents.noaa.gov/met.html?bdate=${ymd}&edate=${ymd}&units=standard&timezone=LST/LDT&id=${FORT_POINT.id}`;
+  const fpSrc = (at, api) => ({ name: FORT_POINT.name, url: fpPage, api, distMi: fpDist, at, measured: true });
+  const omPage = (path, hourly, daysBefore = 0) => `https://open-meteo.com/en/docs${path}?${new URLSearchParams({
+    latitude: site.lat, longitude: site.lon, hourly,
+    start_date: fmtLaDate(new Date(t - daysBefore * 24 * H)), end_date: day,
+    temperature_unit: 'fahrenheit', wind_speed_unit: 'mph', precipitation_unit: 'inch', timezone: TZ,
+  })}`;
+  const omPath = now - t < 85 * 24 * H ? '' : '/historical-forecast-api';
+  const omSrc = (hourly, daysBefore) => om.v && { ...om.v.src, api: om.v.src.url, url: omPage(omPath, hourly, daysBefore), at: om.v.at?.at };
   const buoySrc = (at) => ({ name: BUOY.name, url: BUOY.url, distMi: distanceMi(site.lat, site.lon, BUOY.lat, BUOY.lon), at, measured: true, via: by.v?.via });
-  const mrSrc = mr.v && { ...mr.v.src, at: mr.v.at?.at };
+  const mrSrc = (hourly) => mr.v && { ...mr.v.src, api: mr.v.src.url, url: omPage('/marine-weather-api', hourly), at: mr.v.at?.at };
   const fail = (msg) => ({ value: null, error: msg });
 
   // Air temp and wind: measured Fort Point when close, else the model grid point; the other is shown as a cross-check.
   const fpAir = fp.v?.airRow && { value: Math.round(fp.v.airRow.f), unit: '°F', src: fpSrc(fp.v.airRow.at, fp.v.apiAir) };
-  const omAir = om.v?.at && { value: Math.round(om.v.at.temperature_2m), unit: '°F', src: omSrc };
+  const omAir = om.v?.at && { value: Math.round(om.v.at.temperature_2m), unit: '°F', src: omSrc('temperature_2m') };
   const fpWind = fp.v?.windRow && { mph: fp.v.windRow.kt * KT_TO_MPH, deg: fp.v.windRow.deg, kt: fp.v.windRow.kt, src: fpSrc(fp.v.windRow.at, fp.v.apiWind) };
-  const omWind = om.v?.at && { mph: om.v.at.wind_speed_10m, deg: om.v.at.wind_direction_10m, src: omSrc };
+  const omWind = om.v?.at && { mph: om.v.at.wind_speed_10m, deg: om.v.at.wind_direction_10m, src: omSrc('wind_speed_10m,wind_direction_10m') };
   const useFp = fpDist <= FORT_POINT_MAX_MI;
   const pick = (a, b) => (useFp ? [a || b, a ? b : null] : [b || a, b ? a : null]);
 
@@ -296,7 +305,7 @@ export async function getConditions(site, t, { get = createFetcher(), now = new 
 
   const code = om.v?.at?.weather_code;
   out.weather = code != null
-    ? { value: weatherFromCode(code), src: omSrc, detail: `WMO code ${code}`, note: 'If observed weather was different, record what you saw.' }
+    ? { value: weatherFromCode(code), src: omSrc('weather_code'), detail: `WMO code ${code}`, note: 'If observed weather was different, record what you saw.' }
     : fail(om.e ? String(om.e.message || om.e) : 'No weather estimate for that time.');
 
   const windText = (w) => `${Math.round(w.mph)} mph ${compass8(w.deg)}`;
@@ -308,27 +317,26 @@ export async function getConditions(site, t, { get = createFetcher(), now = new 
     : fail('No wind reading near that time.');
 
   out.recentRain = om.v
-    ? { value: om.v.rain >= RAIN_THRESHOLD_IN ? 'Yes' : 'No', src: omSrc, detail: `${om.v.rain.toFixed(2)} in in the ${RAIN_WINDOW_H} h before`, note: `Yes = ${RAIN_THRESHOLD_IN} in or more in ${RAIN_WINDOW_H} h (SFPUC 72-hour advisory).` }
+    ? { value: om.v.rain >= RAIN_THRESHOLD_IN ? 'Yes' : 'No', src: omSrc('precipitation', 3), detail: `${om.v.rain.toFixed(2)} in in the ${RAIN_WINDOW_H} h before`, note: `Yes = ${RAIN_THRESHOLD_IN} in or more in ${RAIN_WINDOW_H} h (SFPUC 72-hour advisory).` }
     : fail(String(om.e?.message || 'Rain history unavailable.'));
 
   const mrSst = mr.v?.at?.sea_surface_temperature;
   const mrWave = mr.v?.at?.wave_height;
   if (by.v?.water) {
-    out.waterTemp = { value: Math.round(cToF(by.v.water.c)), unit: '°F', src: buoySrc(by.v.water.at), detail: `${by.v.water.c.toFixed(1)} °C`, alt: mrSst != null && { text: `${Math.round(mrSst)}°F`, src: mrSrc } };
+    out.waterTemp = { value: Math.round(cToF(by.v.water.c)), unit: '°F', src: buoySrc(by.v.water.at), detail: `${by.v.water.c.toFixed(1)} °C` };
   } else if (mrSst != null) {
-    out.waterTemp = { value: Math.round(mrSst), unit: '°F', src: mrSrc, note: 'Buoy reading unavailable; model estimate.' };
+    out.waterTemp = { value: Math.round(mrSst), unit: '°F', src: mrSrc('sea_surface_temperature'), note: 'Buoy reading unavailable; model estimate.' };
   } else out.waterTemp = fail('No water temperature near that time.');
   if (site.bay && out.waterTemp.value != null) out.waterTemp.note = 'Measured offshore, outside the Golden Gate; the bay can differ.';
 
   const waveFt = by.v?.wave ? by.v.wave.m * M_TO_FT : mrWave;
-  const waveSrc = by.v?.wave ? buoySrc(by.v.wave.at) : mrSrc;
+  const waveSrc = by.v?.wave ? buoySrc(by.v.wave.at) : mrSrc('wave_height');
   if (waveFt == null) out.waveHeight = fail('No wave reading near that time.');
   else if (site.bay) {
     out.waveHeight = { value: 'observe on site', src: waveSrc, detail: `offshore ${waveFt.toFixed(1)} ft (${waveBand(waveFt)})`, note: 'Sheltered bay beach: offshore swell does not reach it. Judge by eye.' };
   } else {
     out.waveHeight = {
       value: waveBand(waveFt), src: waveSrc, detail: `${waveFt.toFixed(1)} ft significant height`,
-      alt: by.v?.wave && mrWave != null && { text: `${mrWave.toFixed(1)} ft`, src: mrSrc },
       note: site.group === 'B' ? 'Offshore swell; this cove is often smaller.' : null,
     };
   }
@@ -340,7 +348,7 @@ export async function getConditions(site, t, { get = createFetcher(), now = new 
       value: td.v.value, rising: td.v.rising, heightFt: td.v.ft,
       sub: ftStr(td.v.ft),
       detail: `${td.v.rising ? 'Rising' : 'Falling'}. ${[f(td.v.prev), f(td.v.next)].join(' → ')}`,
-      src: { name: td.v.st.name, url: `https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=${td.v.st.id}`, distMi: td.v.st.distMi, predicted: true },
+      src: { name: td.v.st.name, url: `https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=${td.v.st.id}&units=standard&bdate=${ymd}&edate=${ymd}&timezone=LST/LDT&clock=12hour&datum=MLLW&interval=hilo&action=dailychart`, distMi: td.v.st.distMi, predicted: true },
       note: 'Height above mean lower low water (MLLW), estimated between the predicted low and high.',
     };
   } else out.tide = fail(String(td.e?.message || 'Tide predictions unavailable.'));
