@@ -20,11 +20,9 @@ export const WEATHER = ['sunny', 'partly cloudy', 'overcast', 'fog', 'light rain
 export const WAVE_BANDS = [
   [1, '<1 ft'], [2, '1–2 ft'], [4, '2–4 ft'], [6, '4–6 ft'], [9, '6–9 ft'], [12, '9–12 ft'], [Infinity, '12+ ft'],
 ];
-export const TIDE = { low: 'low', high: 'high', in: 'in (rising)', out: 'out (falling)' };
 
 export const RAIN_WINDOW_H = 72;      // SFPUC: avoid water contact 72 h after rain
 export const RAIN_THRESHOLD_IN = 0.1; // agreed rule: ≥0.1 in total in that window
-export const TIDE_SLACK_MIN = 60;     // within 1 h of a predicted high/low counts as high/low
 export const FORT_POINT_MAX_MI = 2.5; // use the measured Fort Point station for air/wind when this close
 
 const FORT_POINT = { id: '9414290', name: 'NOAA Fort Point 9414290', lat: 37.806306, lon: -122.465889 };
@@ -73,6 +71,9 @@ export function weatherFromCode(code) {
   return null;
 }
 
+// Tide at time t from the predicted highs and lows around it: low or high (whichever half of the
+// swing t is in), rising or falling, and the height by NOAA's cosine interpolation between the two
+// turns (subordinate stations publish only highs and lows, not 6-minute heights).
 export function tideState(t, extremes) {
   // extremes: [{at: Date, type: 'H'|'L', ft}] sorted by time
   let prev = null, next = null;
@@ -80,13 +81,11 @@ export function tideState(t, extremes) {
     if (e.at <= t) prev = e;
     else { next = e; break; }
   }
-  const near = [prev, next].filter(Boolean).sort((a, b) => Math.abs(a.at - t) - Math.abs(b.at - t))[0];
-  if (!near) return null;
-  let value;
-  if (Math.abs(near.at - t) <= TIDE_SLACK_MIN * 60e3) value = near.type === 'H' ? TIDE.high : TIDE.low;
-  else if (next) value = next.type === 'H' ? TIDE.in : TIDE.out;
-  else value = prev.type === 'H' ? TIDE.out : TIDE.in;
-  return { value, prev, next };
+  if (!prev || !next) return null;
+  const frac = (t - prev.at) / (next.at - prev.at);
+  const ft = (prev.ft + next.ft) / 2 + ((prev.ft - next.ft) / 2) * Math.cos(Math.PI * frac);
+  const turn = frac < 0.5 ? prev : next;
+  return { value: turn.type === 'H' ? 'high' : 'low', rising: next.type === 'H', ft, prev, next };
 }
 
 // Minutes Los Angeles is ahead of UTC at instant d (negative).
@@ -297,7 +296,7 @@ export async function getConditions(site, t, { get = createFetcher(), now = new 
 
   const code = om.v?.at?.weather_code;
   out.weather = code != null
-    ? { value: weatherFromCode(code), src: omSrc, detail: `WMO code ${code}`, note: 'Model estimate. Trust your eyes, especially for fog.' }
+    ? { value: weatherFromCode(code), src: omSrc, detail: `WMO code ${code}`, note: 'If observed weather was different, record what you saw.' }
     : fail(om.e ? String(om.e.message || om.e) : 'No weather estimate for that time.');
 
   const windText = (w) => `${Math.round(w.mph)} mph ${compass8(w.deg)}`;
@@ -309,7 +308,7 @@ export async function getConditions(site, t, { get = createFetcher(), now = new 
     : fail('No wind reading near that time.');
 
   out.recentRain = om.v
-    ? { value: om.v.rain >= RAIN_THRESHOLD_IN ? 'Y' : 'N', src: omSrc, detail: `${om.v.rain.toFixed(2)} in in the ${RAIN_WINDOW_H} h before`, note: `Y = ${RAIN_THRESHOLD_IN} in or more in ${RAIN_WINDOW_H} h (SFPUC 72-hour advisory).` }
+    ? { value: om.v.rain >= RAIN_THRESHOLD_IN ? 'Yes' : 'No', src: omSrc, detail: `${om.v.rain.toFixed(2)} in in the ${RAIN_WINDOW_H} h before`, note: `Yes = ${RAIN_THRESHOLD_IN} in or more in ${RAIN_WINDOW_H} h (SFPUC 72-hour advisory).` }
     : fail(String(om.e?.message || 'Rain history unavailable.'));
 
   const mrSst = mr.v?.at?.sea_surface_temperature;
@@ -335,11 +334,14 @@ export async function getConditions(site, t, { get = createFetcher(), now = new 
   }
 
   if (td.v?.value) {
-    const f = (e) => e && `${e.type === 'H' ? 'High' : 'Low'} ${fmtLaTime(e.at)} (${e.ft.toFixed(1)} ft)`;
+    const ftStr = (x) => `${x < 0 ? '−' : ''}${Math.abs(x).toFixed(1)} ft`;
+    const f = (e) => e && `${e.type === 'H' ? 'High' : 'Low'} ${fmtLaTime(e.at)} (${ftStr(e.ft)})`;
     out.tide = {
-      value: td.v.value, detail: [f(td.v.prev), f(td.v.next)].filter(Boolean).join(' → '),
+      value: td.v.value, rising: td.v.rising, heightFt: td.v.ft,
+      sub: ftStr(td.v.ft),
+      detail: `${td.v.rising ? 'Rising' : 'Falling'}. ${[f(td.v.prev), f(td.v.next)].join(' → ')}`,
       src: { name: td.v.st.name, url: `https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=${td.v.st.id}`, distMi: td.v.st.distMi, predicted: true },
-      note: `High/low = within ${TIDE_SLACK_MIN} min of the predicted turn.`,
+      note: 'Height above mean lower low water (MLLW), estimated between the predicted low and high.',
     };
   } else out.tide = fail(String(td.e?.message || 'Tide predictions unavailable.'));
 
@@ -347,6 +349,6 @@ export async function getConditions(site, t, { get = createFetcher(), now = new 
 }
 
 export const FIELDS = [
-  ['airTemp', 'Air Temp'], ['weather', 'Weather'], ['windSpeed', 'Wind Speed'], ['windDir', 'Wind Direction'],
-  ['recentRain', 'Recent Rain'], ['waterTemp', 'Water Temp'], ['waveHeight', 'Wave Height'], ['tide', 'Tide'],
+  ['airTemp', 'Air Temperature'], ['weather', 'Weather'], ['windSpeed', 'Wind Speed'], ['windDir', 'Wind Direction'],
+  ['recentRain', 'Rain in Last 72hr'], ['waterTemp', 'Water Temperature'], ['waveHeight', 'Wave Height'], ['tide', 'Tide'],
 ];

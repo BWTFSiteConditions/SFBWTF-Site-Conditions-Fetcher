@@ -9,6 +9,6 @@ for (const s of SITES.filter((s) => !ids.length || ids.includes(s.id))) {
   for (const [k, label] of FIELDS) {
     const f = c[k];
     const src = f.src ? `${f.src.name} ${f.src.distMi.toFixed(1)} mi${f.src.at ? ' @' + fmtLaTime(f.src.at) : ''}${f.src.via ? ' via ' + f.src.via : ''}` : '';
-    console.log(`  ${label.padEnd(15)} ${String(f.value ?? 'ERR ' + f.error).padEnd(16)} ${f.unit || ''} ${f.detail || ''} | ${src}${f.alt ? ' | alt ' + f.alt.text : ''}`);
+    console.log(`  ${label.padEnd(15)} ${String((f.value ?? 'ERR ' + f.error) + (f.sub ? ' ' + f.sub : '') + (f.rising != null ? (f.rising ? ' ↑' : ' ↓') : '')).padEnd(16)} ${f.unit || ''} ${f.detail || ''} | ${src}${f.alt ? ' | alt ' + f.alt.text : ''}`);
   }
 }

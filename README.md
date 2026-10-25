@@ -10,10 +10,10 @@ Basic fetcher for local site conditions used in SF BWTF Testing. The browser cal
 | Weather | sunny / partly cloudy / overcast / fog / light rain / heavy rain / snow | Open-Meteo WMO weather code (model; flagged "trust your eyes") |
 | Wind Speed | mph | Same as Air Temp. Fort Point reports knots, converted ×1.15078. |
 | Wind Direction | N NE E SE S SW W NW (coming from) | Same as Air Temp |
-| Recent Rain | Y / N | Open-Meteo hourly precipitation. **Y = 0.1 in or more in the 72 h before sampling** (SFPUC 72-hour advisory; rule agreed with the chapter). |
+| Recent Rain | Yes / No | Open-Meteo hourly precipitation. **Yes = 0.1 in or more in the 72 h before sampling** (SFPUC 72-hour advisory; rule agreed with the chapter). |
 | Water Temp | °F | SF Bar buoy NDBC 46237 / CDIP 142 (measured). Fallback: Open-Meteo Marine SST. |
 | Wave Height | <1 ft … 12+ ft bands | SF Bar buoy significant wave height. Fallback: Open-Meteo Marine. **Aquatic Park and Crissy Field show "observe on site"**, because offshore swell doesn't reach those sheltered bay beaches. The offshore reading is still shown for reference. |
-| Tide | low / high / in (rising) / out (falling) | NOAA CO-OPS predictions: North Point Pier 41 (Aquatic Park), Fort Point/Golden Gate (Crissy, China, Baker), Ocean Beach 9414275 (Group C). "High"/"low" = within 60 min of the predicted turn. |
+| Tide | low / high, ↑ rising or ↓ falling, and height in ft (MLLW) | NOAA CO-OPS predictions: North Point Pier 41 (Aquatic Park), Fort Point/Golden Gate (Crissy, China, Baker), Ocean Beach 9414275 (Group C). Low or high = which half of the swing between the predicted turns the sample falls in. Height is NOAA's cosine interpolation between the turns (subordinate stations publish only highs and lows); within 0.1 ft of Golden Gate's 6-minute predictions over a full cycle on Feb 16, 2026. |
 
 Buoy data: NDBC's own files don't allow cross-origin requests, so the page reads the same buoy from CDIP's THREDDS realtime file (last ~3 weeks) and the IOOS ERDDAP archive (older dates). Both allow browser requests, so no proxy is needed.
 
