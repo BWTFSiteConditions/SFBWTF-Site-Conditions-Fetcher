@@ -98,6 +98,11 @@ const SITE_THEMES = [
   { accent: '#057b8d', tint: '#e3f2f4', ink: '#03363e', line: '#88c8d2' }, // teal
 ];
 
+// Back to the picker; shown above the first site's results and again after the last.
+function backBar(where = '') {
+  return `<div class="change-bar ${where}"><button type="button" class="ghost back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to site and time</button></div>`;
+}
+
 function renderSite(site, c, t, first, i = 0) {
   const th = SITE_THEMES[i % SITE_THEMES.length];
   const vars = `--site-accent:${th.accent};--site-tint:${th.tint};--site-ink:${th.ink};--site-line:${th.line}`;
@@ -109,7 +114,7 @@ function renderSite(site, c, t, first, i = 0) {
       <h2>${esc(site.name)}</h2>
       <span class="when">Group ${site.group} · ${when}</span>
     </header>
-    ${first ? `<div class="change-bar"><button type="button" class="ghost back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to site and time</button></div>` : ''}
+    ${first ? backBar() : ''}
     ${FIELDS.map(([k, label]) => row(k, label, c[k])).join('')}
   </section>`;
 }
@@ -132,7 +137,7 @@ async function run(e) {
   const sites = SITES.filter((s) => ids.includes(s.id));
   try {
     const all = await Promise.all(sites.map((s) => getConditions(s, t, { get })));
-    $('results').innerHTML = sites.map((s, i) => renderSite(s, all[i], t, i === 0, i)).join('');
+    $('results').innerHTML = sites.map((s, i) => renderSite(s, all[i], t, i === 0, i)).join('') + backBar('bottom');
     document.body.classList.add('has-results');
     status.textContent = future ? 'That time is in the future, so these values are forecasts.' : '';
     window.scrollTo(0, 0);
