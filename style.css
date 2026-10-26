@@ -76,7 +76,9 @@ button { font: inherit; cursor: pointer; border-radius: 6px; }
 .status.err { color: #b3261e; }
 
 /* results: one block per site */
-.site-card { margin: 0 -16px 24px; }
+.site-card { margin: 0 -16px 24px; border-left: 6px solid var(--site-accent, var(--blue)); }
+.site-card .site-accent { background: var(--site-accent, var(--blue)); }
+.site-card .card-head { background: var(--site-tint, var(--tint)); color: var(--site-ink, var(--navy)); }
 .change-bar { display: flex; gap: 8px; padding: 12px 16px; border-bottom: 2px solid var(--ink-strong); }
 .change-bar .ghost { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .change-bar .ghost svg { width: 18px; height: 18px; }
@@ -88,17 +90,17 @@ button { font: inherit; cursor: pointer; border-radius: 6px; }
   font-size: 44px; font-weight: 700; line-height: 1; white-space: nowrap;
 }
 .row a.value {
-  color: inherit; text-decoration: underline; text-decoration-color: #95cdeb;
+  color: inherit; text-decoration: underline; text-decoration-color: var(--site-line, #95cdeb);
   text-decoration-thickness: 3px; text-underline-offset: 6px;
 }
-.row a.value:hover { text-decoration-color: var(--blue); }
+.row a.value:hover { text-decoration-color: var(--site-accent, var(--blue)); }
 .row .value.word { font-size: 30px; white-space: normal; }
 .row .value.missing { font-size: 32px; color: var(--body); }
 .row .value .unit { font-size: .55em; margin-left: .18em; align-self: flex-end; padding-bottom: .1em; }
-.row .value .arrow { width: .7em; height: .7em; margin-left: .12em; color: var(--blue); flex-shrink: 0; }
+.row .value .arrow { width: .7em; height: .7em; margin-left: .12em; color: var(--site-accent, var(--blue)); flex-shrink: 0; }
 .row .value-col { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .row .sub { font-size: 24px; font-weight: 700; line-height: 1; }
 .row .src { margin: 0; font-size: 14px; line-height: 1.35; color: var(--ink); }
-.row .note { margin: 0; font-size: 14px; font-weight: 500; line-height: 1.35; color: var(--navy); background: var(--tint); border-radius: 4px; padding: 6px 8px; }
+.row .note { margin: 0; font-size: 14px; font-weight: 500; line-height: 1.35; color: var(--site-ink, var(--navy)); background: var(--site-tint, var(--tint)); border-radius: 4px; padding: 6px 8px; }
 
 .foot { margin-top: 8px; padding-top: 4px; padding-bottom: 32px; font-size: 14px; color: var(--ink); }

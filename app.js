@@ -89,9 +89,21 @@ function row(k, label, f) {
   </div>`;
 }
 
-function renderSite(site, c, t, first) {
+// Each selected site gets its own color, cycling through the BWTF phase colors (accent, banner
+// tint, banner text, underline), so several sites' results are easy to tell apart while scrolling.
+const SITE_THEMES = [
+  { accent: '#368add', tint: '#e6f1fb', ink: '#042c53', line: '#95cdeb' }, // blue
+  { accent: '#0f6e55', tint: '#e8f5f1', ink: '#0c3a32', line: '#9acec1' }, // green
+  { accent: '#8932d3', tint: '#f1e8fa', ink: '#2a0044', line: '#c680ff' }, // purple
+  { accent: '#057b8d', tint: '#e3f2f4', ink: '#03363e', line: '#88c8d2' }, // teal
+];
+
+function renderSite(site, c, t, first, i = 0) {
+  const th = SITE_THEMES[i % SITE_THEMES.length];
+  const vars = `--site-accent:${th.accent};--site-tint:${th.tint};--site-ink:${th.ink};--site-line:${th.line}`;
   const when = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(t);
-  return `<section class="site-card">
+  return `<section class="site-card" style="${vars}">
+    <div class="accent site-accent"></div>
     <header class="card-head">
       <span class="org">Surfrider SF · Blue Water Task Force</span>
       <h2>${esc(site.name)}</h2>
@@ -120,7 +132,7 @@ async function run(e) {
   const sites = SITES.filter((s) => ids.includes(s.id));
   try {
     const all = await Promise.all(sites.map((s) => getConditions(s, t, { get })));
-    $('results').innerHTML = sites.map((s, i) => renderSite(s, all[i], t, i === 0)).join('');
+    $('results').innerHTML = sites.map((s, i) => renderSite(s, all[i], t, i === 0, i)).join('');
     document.body.classList.add('has-results');
     status.textContent = future ? 'That time is in the future, so these values are forecasts.' : '';
     window.scrollTo(0, 0);
